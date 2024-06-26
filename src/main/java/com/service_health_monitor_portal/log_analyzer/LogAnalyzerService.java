@@ -2,6 +2,13 @@ package com.service_health_monitor_portal.log_analyzer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.service_health_monitor_portal.log_analyzer.InfluxDBService;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.influxdb.client.domain.WritePrecision;
+import com.influxdb.client.write.Point;
+
+import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -14,9 +21,16 @@ import java.util.stream.Stream;
 @Service
 public class LogAnalyzerService {
 
+    private final InfluxDBService influxDBService;
+
     private static final Logger logger = LoggerFactory.getLogger(LogAnalyzerService.class);
     private static final String LOG_FILE_PATH = "/home/fero/Desktop/service-health-monitor-portal/Simulator-Service/services_logs/simulator.log";
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Autowired
+    public LogAnalyzerService(InfluxDBService influxDBService) {
+        this.influxDBService = influxDBService;
+    }
 
     public void analyzeLogs() {
         try (Stream<String> stream = Files.lines(Paths.get(LOG_FILE_PATH))) {
@@ -33,7 +47,25 @@ public class LogAnalyzerService {
                 if (logNode.has("service_log")) {
                     JsonNode serviceLogNode = logNode.get("service_log");
                     logger.info("Extracted service log: {}", serviceLogNode.get("name"));
-                    // Further process the service_log object if needed
+                        
+                    JsonNode timestamp = logNode.get("@timestamp");
+                    Instant instant = Instant.now();
+                    if (timestamp == null) {
+                        logger.warn("No timestamp found in log line: {}", logLine);
+                    }
+                    else {
+                        instant = Instant.parse(timestamp.asText());
+                        logger.info("Timestamp: {}", instant);
+                    }
+                    
+                    Point point = Point.measurement(serviceLogNode.get("name").asText())
+                        .addTag("id", serviceLogNode.get("id").asText())
+                        .addField("success", serviceLogNode.get("success").asInt())
+                        .addField("throttlingError", serviceLogNode.get("throttlingError").asInt())
+                        .addField("faultError", serviceLogNode.get("faultError").asInt())
+                        .addField("invalidInputError", serviceLogNode.get("invalidInputError").asInt()).time(instant, WritePrecision.MS);
+
+                    influxDBService.writeSinglePoint(point);
                 }
             } else {
                 logger.warn("Invalid JSON format: {}", logLine);
