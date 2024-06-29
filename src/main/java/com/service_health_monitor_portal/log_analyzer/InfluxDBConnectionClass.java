@@ -117,7 +117,7 @@ public class InfluxDBConnectionClass {
 
     
 
-    public void queryData(InfluxDBClient influxDBClient, String flux) {
+    public List<FluxTable> queryData(InfluxDBClient influxDBClient, String flux) {
         // from(bucket: "myFirstBucket")
         // |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
         // |> filter(fn: (r) => r["_measurement"] == "sensor")
@@ -127,15 +127,18 @@ public class InfluxDBConnectionClass {
         // |> sort()
         // |> yield(name: "sort")
 
+        
+
         QueryApi queryApi = influxDBClient.getQueryApi();
 
         List<FluxTable> tables = queryApi.query(flux);
-        for (FluxTable fluxTable : tables) {
-            List<FluxRecord> records = fluxTable.getRecords();
-            for (FluxRecord fluxRecord : records) {
-                // System.out.println(fluxRecord.getValueByKey("sensor_id"));
-                // here we will take actions
-            }
-        }
+        // for (FluxTable fluxTable : tables) {
+        //     List<FluxRecord> records = fluxTable.getRecords();
+        //     for (FluxRecord fluxRecord : records) {
+        //         // System.out.println(fluxRecord.getValueByKey("sensor_id"));
+        //         // here we will take actions
+        //     }
+        // }
+        return tables;
     }
 }

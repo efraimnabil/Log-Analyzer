@@ -2,6 +2,8 @@ package com.service_health_monitor_portal.log_analyzer;
 
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.write.Point;
+import com.influxdb.query.FluxTable;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.service_health_monitor_portal.log_analyzer.InfluxDBConnectionClass;
@@ -28,7 +30,7 @@ public class InfluxDBService {
         return influxDBConnectionClass.writeMultiplePoints(influxDBClient, points);
     }
 
-    public void queryData(String fluxQuery) {
-        influxDBConnectionClass.queryData(influxDBClient, fluxQuery);
+    public List<FluxTable> queryData(String fluxQuery) {
+        return influxDBConnectionClass.queryData(influxDBClient, fluxQuery);
     }
 }
