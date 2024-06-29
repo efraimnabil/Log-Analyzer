@@ -2,7 +2,6 @@ package com.service_health_monitor_portal.log_analyzer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.service_health_monitor_portal.log_analyzer.InfluxDBService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.influxdb.client.domain.WritePrecision;
