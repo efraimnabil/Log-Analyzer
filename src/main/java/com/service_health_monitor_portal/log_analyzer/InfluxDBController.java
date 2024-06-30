@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,20 +29,7 @@ public class InfluxDBController {
         this.influxDBService = influxDBService;
     }
 
-    @GetMapping("/availability")
-    public ResponseEntity<List<AvailabilityData>> calculateAvailability() {
-        try {
-            List<AvailabilityData> availabilityData = calculateAvailabilityFromInfluxDB();
-            return ResponseEntity.ok(availabilityData);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ArrayList<>());
-        }
-    }
-
-    private List<AvailabilityData> calculateAvailabilityFromInfluxDB() {
-        String fluxQuery = "from(bucket: \"Services\") |> range(start: -7d) |> filter(fn: (r) => r._measurement == \"efraimService\")";
-
+    private List<AvailabilityData> calculateAvailabilityFromInfluxDB(String fluxQuery) {
         List<FluxTable> queryResult = influxDBService.queryData(fluxQuery);
 
         Map<Instant, Integer> successCounts = new HashMap<>();
@@ -150,4 +138,23 @@ public class InfluxDBController {
         String name,
         int id
     ) {}
+
+    @GetMapping("/services/{serviceId}")
+    public ResponseEntity<List<AvailabilityData>> getServiceDataById(@PathVariable("serviceId") Integer serviceId) {
+        try {
+            System.out.println("Service ID: " + serviceId);
+            String fluxQuery = "from(bucket: \"Services\") |> range(start: -7d) |> filter(fn: (r) => r[\"id\"] == \"" + serviceId + "\")";
+            System.err.println(fluxQuery);
+            List<AvailabilityData> queryResult = calculateAvailabilityFromInfluxDB(fluxQuery);
+            
+            if (queryResult.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(queryResult);
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
+    }
 }

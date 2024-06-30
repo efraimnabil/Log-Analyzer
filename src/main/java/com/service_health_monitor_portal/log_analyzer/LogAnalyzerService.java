@@ -3,6 +3,7 @@ package com.service_health_monitor_portal.log_analyzer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
@@ -23,7 +24,8 @@ public class LogAnalyzerService {
     private final InfluxDBService influxDBService;
 
     private static final Logger logger = LoggerFactory.getLogger(LogAnalyzerService.class);
-    private static final String LOG_FILE_PATH = "/home/fero/Desktop/service-health-monitor-portal/Simulator-Service/services_logs/simulator.log";
+    @Value("${log.file.path}")
+    private String LOG_FILE_PATH;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
