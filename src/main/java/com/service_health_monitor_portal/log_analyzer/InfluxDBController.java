@@ -7,9 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -128,4 +125,29 @@ public class InfluxDBController {
                     .body(Collections.emptyList());
         }
     }
+
+    @GetMapping("/services")
+    public ResponseEntity<List<ServiceMetadata>> getAllServices() {
+        try {
+            // TODO: get all services from MySQL database
+            String fluxQuery = "from(bucket: \"Services\") |> range(start: -7d) |> group(columns: [\"_measurement\"])";
+            
+            List<FluxTable> queryResult = influxDBService.queryData(fluxQuery);
+            List<ServiceMetadata> services = new ArrayList<>();
+            for (FluxTable table : queryResult) {
+                String serviceName = table.getRecords().get(0).getValueByKey("_measurement").toString();
+                int id = Integer.parseInt(table.getRecords().get(0).getValueByKey("id").toString());
+                services.add(new ServiceMetadata(serviceName, id));
+            }
+            return ResponseEntity.ok(services);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.emptyList());
+        }
+    }
+
+    record ServiceMetadata(
+        String name,
+        int id
+    ) {}
 }
