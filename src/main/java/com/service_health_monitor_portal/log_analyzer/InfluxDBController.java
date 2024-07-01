@@ -22,65 +22,8 @@ import java.util.*;
 @CrossOrigin(origins = "http://localhost:5173")
 public class InfluxDBController {
 
-    private final InfluxDBService influxDBService;
-
     @Autowired
-    public InfluxDBController(InfluxDBService influxDBService) {
-        this.influxDBService = influxDBService;
-    }
-
-    private List<AvailabilityData> calculateAvailabilityFromInfluxDB(String fluxQuery) {
-        List<FluxTable> queryResult = influxDBService.queryData(fluxQuery);
-
-        Map<Instant, Integer> successCounts = new HashMap<>();
-        Map<Instant, Integer> throttlingErrorCounts = new HashMap<>();
-        Map<Instant, Integer> dependencyErrorCounts = new HashMap<>();
-        Map<Instant, Integer> faultErrorCounts = new HashMap<>();
-        Map<Instant, Integer> invalidInputErrorCounts = new HashMap<>();
-        Map<Instant, Integer> totalCounts = new HashMap<>();
-
-        for (FluxTable table : queryResult) {
-            List<FluxRecord> records = table.getRecords();
-            for (FluxRecord record : records) {
-                Instant timestamp = record.getTime();
-                String field = record.getValueByKey("_field").toString();
-                Integer value = Integer.valueOf(record.getValueByKey("_value").toString());
-
-                totalCounts.put(timestamp, totalCounts.getOrDefault(timestamp, 0) + 1);
-
-                if (field.equals("success") && value == 1) {
-                    successCounts.put(timestamp, successCounts.getOrDefault(timestamp, 0) + 1);
-                }
-
-                if (field.equals("throttlingError") && value == 1) {
-                    throttlingErrorCounts.put(timestamp, throttlingErrorCounts.getOrDefault(timestamp, 0) + 1);
-                }
-
-                if (field.equals("dependencyError") && value == 1) {
-                    dependencyErrorCounts.put(timestamp, dependencyErrorCounts.getOrDefault(timestamp, 0) + 1);
-                }
-
-                if (field.equals("faultError") && value == 1) {
-                    faultErrorCounts.put(timestamp, faultErrorCounts.getOrDefault(timestamp, 0) + 1);
-                }
-
-                if (field.equals("invalidInputError") && value == 1) {
-                    invalidInputErrorCounts.put(timestamp, invalidInputErrorCounts.getOrDefault(timestamp, 0) + 1);
-                }
-
-            }
-        }
-
-        List<AvailabilityData> availabilityData = new ArrayList<>();
-        for (Instant timestamp : totalCounts.keySet()) {
-            int total = totalCounts.get(timestamp);
-            int success = successCounts.getOrDefault(timestamp, 0);
-            double availability = (double) success / total * 100;
-            availabilityData.add(new AvailabilityData(timestamp, availability));
-        }
-
-        return availabilityData;
-    }
+    private InfluxDBService influxDBService;
 
     @PostMapping("/write")
     public ResponseEntity<String> writeData() {
@@ -93,7 +36,7 @@ public class InfluxDBController {
                     .addField("invalidInputError", 0)
                     .time(Instant.now(), WritePrecision.MS);
 
-            boolean result = influxDBService.writeSinglePoint(point);
+            boolean result = influxDBService.singlePointWrite(point);
             return result ? ResponseEntity.ok("Write Successful") : ResponseEntity.badRequest().body("Write Failed");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -145,8 +88,8 @@ public class InfluxDBController {
             System.out.println("Service ID: " + serviceId);
             String fluxQuery = "from(bucket: \"Services\") |> range(start: -7d) |> filter(fn: (r) => r[\"id\"] == \"" + serviceId + "\")";
             System.err.println(fluxQuery);
-            List<AvailabilityData> queryResult = calculateAvailabilityFromInfluxDB(fluxQuery);
-            
+            List<AvailabilityData> queryResult = influxDBService.calculateAvailabilityFromInfluxDB(fluxQuery);
+
             if (queryResult.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }

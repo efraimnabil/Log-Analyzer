@@ -21,17 +21,13 @@ import java.util.stream.Stream;
 @Service
 public class LogAnalyzerService {
 
-    private final InfluxDBService influxDBService;
+    @Autowired
+    private InfluxDBService influxDBService;
 
     private static final Logger logger = LoggerFactory.getLogger(LogAnalyzerService.class);
     @Value("${log.file.path}")
     private String LOG_FILE_PATH;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
-    @Autowired
-    public LogAnalyzerService(InfluxDBService influxDBService) {
-        this.influxDBService = influxDBService;
-    }
 
     public void analyzeLogs() {
         try (Stream<String> stream = Files.lines(Paths.get(LOG_FILE_PATH))) {
@@ -66,7 +62,7 @@ public class LogAnalyzerService {
                         .addField("faultError", serviceLogNode.get("faultError").asInt())
                         .addField("invalidInputError", serviceLogNode.get("invalidInputError").asInt()).time(instant, WritePrecision.MS);
 
-                    influxDBService.writeSinglePoint(point);
+                    influxDBService.singlePointWrite(point);
                 }
             } else {
                 logger.warn("Invalid JSON format: {}", logLine);
