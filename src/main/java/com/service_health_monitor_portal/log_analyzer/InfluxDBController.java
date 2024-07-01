@@ -83,21 +83,54 @@ public class InfluxDBController {
     ) {}
 
     @GetMapping("/services/{serviceId}")
-    public ResponseEntity<List<AvailabilityData>> getServiceDataById(@PathVariable("serviceId") Integer serviceId) {
+    public ResponseEntity<Map<String, List<StateRateTime>>> getServiceDataById(@PathVariable("serviceId") Integer serviceId) {
         try {
-            System.out.println("Service ID: " + serviceId);
             String fluxQuery = "from(bucket: \"Services\") |> range(start: -7d) |> filter(fn: (r) => r[\"id\"] == \"" + serviceId + "\")";
-            System.err.println(fluxQuery);
-            List<AvailabilityData> queryResult = influxDBService.calculateAvailabilityFromInfluxDB(fluxQuery);
+
+            List<FluxTable> queryResult = influxDBService.queryData(fluxQuery);
 
             if (queryResult.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
-            return ResponseEntity.ok(queryResult);
+            // group the states by the field name
+            Map<String, List<Integer>> stateLists = new HashMap<>();
+            for (FluxTable fluxTable : queryResult) {
+                List<FluxRecord> records = fluxTable.getRecords();
+                for (FluxRecord record : records) {
+                    stateLists.putIfAbsent(record.getValueByKey("_field").toString(), new ArrayList<>());
+                    stateLists.get(record.getValueByKey("_field").toString()).add(Integer.parseInt(record.getValueByKey("_value").toString()));
+                }
+            }
+
+            // average the values for every 4 intervals
+            // TODO: get the interval count from the user
+            final int intervalCount = 4;
+            Map<String, List<StateRateTime>> averagedStateLists = new HashMap<>();
+            for (String key : stateLists.keySet()) {
+                List<Integer> stateList = stateLists.get(key);
+                List<StateRateTime> averagedStateList = new ArrayList<>();
+                for (int i = 0; i < stateList.size(); i += intervalCount) {
+                    int sum = 0;
+                    for (int j = i; j < Math.min(i + intervalCount, stateList.size()); j++) {
+                        sum += stateList.get(j);
+                    }
+                    double rate = 100.0 * sum / intervalCount;
+                    Instant time = queryResult.get(0).getRecords().get(Math.min(i + intervalCount, stateList.size()) - 1).getTime();
+                    averagedStateList.add(new StateRateTime(rate, time));
+                }
+                averagedStateLists.put(key, averagedStateList);
+            }
+            return ResponseEntity.ok(averagedStateLists);
         }
         catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(null);
         }
+    }
+
+    record StateRateTime(
+        Double rate,
+        Instant time
+    ) {
     }
 }

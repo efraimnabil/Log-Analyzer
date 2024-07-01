@@ -60,6 +60,7 @@ public class LogAnalyzerService {
                         .addField("success", serviceLogNode.get("success").asInt())
                         .addField("throttlingError", serviceLogNode.get("throttlingError").asInt())
                         .addField("faultError", serviceLogNode.get("faultError").asInt())
+                        .addField("dependencyError", serviceLogNode.get("dependencyError").asInt())
                         .addField("invalidInputError", serviceLogNode.get("invalidInputError").asInt()).time(instant, WritePrecision.MS);
 
                     influxDBService.singlePointWrite(point);
