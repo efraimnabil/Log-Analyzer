@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.influxdb.client.domain.WritePrecision;
 
@@ -61,17 +62,21 @@ public class InfluxDBController {
     public ResponseEntity<List<ServiceMetadata>> getAllServices() {
         try {
             // TODO: get all services from MySQL database
-            String fluxQuery = "from(bucket: \"Services\") |> range(start: -7d) |> group(columns: [\"_measurement\"])";
+            String fluxQuery = "from(bucket: \"Services\") |> range(start: 1970-01-01T00:00:00Z) |> group(columns: [\"id\"])";
             
             List<FluxTable> queryResult = influxDBService.queryData(fluxQuery);
             List<ServiceMetadata> services = new ArrayList<>();
             for (FluxTable table : queryResult) {
                 String serviceName = table.getRecords().get(0).getValueByKey("_measurement").toString();
-                int id = Integer.parseInt(table.getRecords().get(0).getValueByKey("id").toString());
+                String id = table.getRecords().get(0).getValueByKey("id").toString();
                 services.add(new ServiceMetadata(serviceName, id));
             }
             return ResponseEntity.ok(services);
         } catch (Exception e) {
+            System.out.println("Error " + e.getMessage());
+            for (StackTraceElement element : e.getStackTrace()) {
+                System.out.println(element);
+            }
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Collections.emptyList());
         }
@@ -79,13 +84,16 @@ public class InfluxDBController {
 
     record ServiceMetadata(
         String name,
-        int id
+        String id
     ) {}
 
     @GetMapping("/services/{serviceId}")
-    public ResponseEntity<Map<String, List<StateRateTime>>> getServiceDataById(@PathVariable("serviceId") Integer serviceId) {
+    public ResponseEntity<Map<String, List<StateRateTime>>> getServiceDataById(
+            @PathVariable("serviceId") String serviceId,
+            @RequestParam(defaultValue = "1970-01-01T00:00:00Z") Instant startDate,
+            @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant endDate) {
         try {
-            String fluxQuery = "from(bucket: \"Services\") |> range(start: -7d) |> filter(fn: (r) => r[\"id\"] == \"" + serviceId + "\")";
+            String fluxQuery = "from(bucket: \"Services\") |> range(start: " + startDate + ", stop: " + endDate + ") |> filter(fn: (r) => r[\"id\"] == \"" + serviceId + "\")";
 
             List<FluxTable> queryResult = influxDBService.queryData(fluxQuery);
 
