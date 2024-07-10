@@ -88,10 +88,11 @@ public class InfluxDBController {
     ) {}
 
     @GetMapping("/services/{serviceId}")
-    public ResponseEntity<Map<String, List<StateRateTime>>> getServiceDataById(
+    public ResponseEntity<List<TypeFlagTime>> getServiceDataById(
             @PathVariable("serviceId") String serviceId,
             @RequestParam(defaultValue = "1970-01-01T00:00:00Z") Instant startDate,
-            @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant endDate) {
+            @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant endDate,
+            @RequestParam(name="type", required = false) List<String> types) {
         try {
             String fluxQuery = "from(bucket: \"Services\") |> range(start: " + startDate + ", stop: " + endDate + ") |> filter(fn: (r) => r[\"id\"] == \"" + serviceId + "\")";
 
@@ -101,43 +102,31 @@ public class InfluxDBController {
                 return ResponseEntity.notFound().build();
             }
             // group the states by the field name
-            Map<String, List<Integer>> stateLists = new HashMap<>();
+            List<TypeFlagTime> stateLists = new ArrayList<>();
             for (FluxTable fluxTable : queryResult) {
                 List<FluxRecord> records = fluxTable.getRecords();
                 for (FluxRecord record : records) {
-                    stateLists.putIfAbsent(record.getValueByKey("_field").toString(), new ArrayList<>());
-                    stateLists.get(record.getValueByKey("_field").toString()).add(Integer.parseInt(record.getValueByKey("_value").toString()));
+                    String type = record.getValueByKey("_field").toString();
+                    if (types == null || types.contains(type)) {
+                        Boolean flag = 1 == Integer.parseInt(record.getValueByKey("_value").toString());
+                        TypeFlagTime temp = new TypeFlagTime(type, flag, record.getTime());
+                        stateLists.add(temp);
+                    }
                 }
             }
 
-            // average the values for every 4 intervals
-            // TODO: get the interval count from the user
-            final int intervalCount = 4;
-            Map<String, List<StateRateTime>> averagedStateLists = new HashMap<>();
-            for (String key : stateLists.keySet()) {
-                List<Integer> stateList = stateLists.get(key);
-                List<StateRateTime> averagedStateList = new ArrayList<>();
-                for (int i = 0; i < stateList.size(); i += intervalCount) {
-                    int sum = 0;
-                    for (int j = i; j < Math.min(i + intervalCount, stateList.size()); j++) {
-                        sum += stateList.get(j);
-                    }
-                    double rate = 100.0 * sum / intervalCount;
-                    Instant time = queryResult.get(0).getRecords().get(Math.min(i + intervalCount, stateList.size()) - 1).getTime();
-                    averagedStateList.add(new StateRateTime(rate, time));
-                }
-                averagedStateLists.put(key, averagedStateList);
-            }
-            return ResponseEntity.ok(averagedStateLists);
+            return ResponseEntity.ok(stateLists);
         }
         catch (Exception e) {
+            System.out.println("Error " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(null);
         }
     }
 
-    record StateRateTime(
-        Double rate,
+    record TypeFlagTime(
+        String type,
+        Boolean flag,
         Instant time
     ) {
     }
