@@ -47,22 +47,15 @@ public class LogAnalyzerService {
                     JsonNode serviceLogNode = logNode.get("service_log");
                     logger.info("Extracted service log: {}", serviceLogNode.get("name"));
 
-                    JsonNode timestamp = logNode.get("@timestamp");
-                    Instant instant = Instant.now();
-                    if (timestamp == null) {
-                        logger.warn("No timestamp found in log line: {}", logLine);
-                    } else {
-                        instant = Instant.parse(timestamp.asText());
-                        logger.info("Timestamp: {}", instant);
-                    }
+                    Instant instant = getTimestamp(logNode);
+                    String serviceName = serviceLogNode.get("name").asText();
+                    String serviceId = serviceLogNode.get("id").asText();
+                    String serviceStatus = serviceLogNode.get("status").asText();
 
-                    Point point = Point.measurement(serviceLogNode.get("name").asText())
-                            .addTag("id", serviceLogNode.get("id").asText())
-                            .addField("success", serviceLogNode.get("success").asInt())
-                            .addField("throttlingError", serviceLogNode.get("throttlingError").asInt())
-                            .addField("faultError", serviceLogNode.get("faultError").asInt())
-                            .addField("dependencyError", serviceLogNode.get("dependencyError").asInt())
-                            .addField("invalidInputError", serviceLogNode.get("invalidInputError").asInt())
+                    Point point = Point.measurement("Service Health")
+                            .addTag("name", serviceName)
+                            .addTag("id", serviceId)
+                            .addField("status", serviceStatus)
                             .time(instant, WritePrecision.MS);
 
                     influxDBService.singlePointWrite(point);
@@ -73,6 +66,18 @@ public class LogAnalyzerService {
         } catch (IOException e) {
             logger.error("Error parsing log line", e);
         }
+    }
+
+    private Instant getTimestamp(JsonNode logNode) {
+        JsonNode timestamp = logNode.get("@timestamp");
+        Instant instant = Instant.now();
+        if (timestamp == null) {
+            logger.warn("No timestamp found in log line: {}", logNode);
+        } else {
+            instant = Instant.parse(timestamp.asText());
+            logger.info("Timestamp: {}", instant);
+        }
+        return instant;
     }
 
     private boolean isValidJson(String logLine) {

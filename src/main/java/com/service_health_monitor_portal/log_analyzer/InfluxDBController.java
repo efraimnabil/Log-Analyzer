@@ -67,7 +67,7 @@ public class InfluxDBController {
             List<FluxTable> queryResult = influxDBService.queryData(fluxQuery);
             List<ServiceMetadata> services = new ArrayList<>();
             for (FluxTable table : queryResult) {
-                String serviceName = table.getRecords().get(0).getValueByKey("_measurement").toString();
+                String serviceName = table.getRecords().get(0).getValueByKey("name").toString();
                 String id = table.getRecords().get(0).getValueByKey("id").toString();
                 services.add(new ServiceMetadata(serviceName, id));
             }
@@ -106,10 +106,9 @@ public class InfluxDBController {
             for (FluxTable fluxTable : queryResult) {
                 List<FluxRecord> records = fluxTable.getRecords();
                 for (FluxRecord record : records) {
-                    String type = record.getValueByKey("_field").toString();
-                    if (types == null || types.contains(type)) {
-                        Boolean flag = 1 == Integer.parseInt(record.getValueByKey("_value").toString());
-                        TypeFlagTime temp = new TypeFlagTime(type, flag, record.getTime());
+                    String status = record.getValueByKey("_value").toString();
+                    if (types == null || types.contains(status)) {
+                        TypeFlagTime temp = new TypeFlagTime(status, record.getTime());
                         stateLists.add(temp);
                     }
                 }
@@ -125,8 +124,7 @@ public class InfluxDBController {
     }
 
     record TypeFlagTime(
-        String type,
-        Boolean flag,
+        String status,
         Instant time
     ) {
     }
