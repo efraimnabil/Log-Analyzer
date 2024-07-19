@@ -26,4 +26,7 @@ public class AvailabilityData {
     public void setAvailability(double availability) {
         this.availability = availability;
     }
+    public int sum(int a, int b) {
+        return a + b;
+    }
 }
