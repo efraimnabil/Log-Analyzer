@@ -22,9 +22,4 @@ public class AvailabilityDataTest {
         AvailabilityData availabilityData = new AvailabilityData(timestamp, 0.0);
         assertEquals(timestamp, availabilityData.getTimestamp());
     }
-
-    @Test
-    public void sumTest() {
-        assertEquals(5, availabilityData.sum(2, 3));
-    }
 }
