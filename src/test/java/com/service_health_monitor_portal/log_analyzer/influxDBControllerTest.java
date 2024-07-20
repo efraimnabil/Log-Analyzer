@@ -77,10 +77,9 @@ public void setUp() {
     }
 
     @Test
-    public void testQueryData_Failure() throws Exception {
+    public void testQueryData_Exception() throws Exception {
 
-        when(influxDBService.queryData(anyString())).thenReturn(Collections.emptyList()); // its tell to mock influxDBService to return empty list when queryData is called with any string
-
+        when(influxDBService.queryData(anyString())).thenThrow(new RuntimeException("Test Exception"));
         mockMvc.perform(get("/influxdb/query"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().string("[]"));
