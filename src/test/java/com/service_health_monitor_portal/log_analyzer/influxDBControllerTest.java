@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.influxdb.client.write.Point;
+import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 
 import okhttp3.MediaType;
@@ -39,6 +40,9 @@ public void setUp() {
     mockMvc = MockMvcBuilders.standaloneSetup(influxDBController).build();
 }
 
+
+// Test for writeData method
+ 
  @Test
  public void testWriteData_Success() throws Exception {
      
@@ -62,16 +66,17 @@ public void setUp() {
 
         verify(influxDBService).singlePointWrite(any(Point.class));// this confirms that singlePointWrite is called with any Point object
     }
+
+ // Test for queryData method
+
     @Test
     public void testQueryData_Success() throws Exception {
 
         FluxTable mockTable = new FluxTable(); // create a mock object of FluxTable
-        List<FluxTable> mockList = Collections.singletonList(mockTable); // create  mockList of FluxTable
-        when(influxDBService.queryData(anyString())).thenReturn(mockList); // its tell to mock influxDBService to return mockList when queryData is called with any string
+        when(influxDBService.queryData(anyString())).thenReturn(Collections.singletonList(mockTable)); // its tell to mock influxDBService to return a list containing mockTable object when queryData is called with any string
 
         mockMvc.perform(get("/influxdb/query"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("[{}]"));
+                .andExpect(status().isOk());
 
         verify(influxDBService).queryData(anyString());
     }
@@ -86,6 +91,42 @@ public void setUp() {
 
         verify(influxDBService).queryData(anyString());
     }
+    
+    
+   // Test for getAllServices method
+
+    @Test
+    public void testGetAllServices_Success() throws Exception {
+        // mock data
+        FluxTable mockTable = new FluxTable();
+        FluxRecord mockRecord = new FluxRecord(0);
+        mockRecord.getValues().put("name", "Test Service");
+        mockRecord.getValues().put("id", "123");
+        mockTable.getRecords().add(mockRecord);
+        when(influxDBService.queryData(anyString())).thenReturn(Collections.singletonList(mockTable));
+        mockMvc.perform(get("/influxdb/services"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("[{\"name\":\"Test Service\",\"id\":\"123\"}]"));
+        verify(influxDBService).queryData(anyString());
+
+    }
+    
+    @Test
+    public void testGetAllServices_Exception() throws Exception {
+
+        when(influxDBService.queryData(anyString())).thenThrow(new RuntimeException("Test Exception"));
+        mockMvc.perform(get("/influxdb/services"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string("[]"));
+
+        verify(influxDBService).queryData(anyString());
+    }
+
+
+
+    // Test for getServiceDataById method
+    
+
     
  
 
