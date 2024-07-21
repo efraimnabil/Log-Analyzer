@@ -3,12 +3,10 @@ package com.service_health_monitor_portal.log_analyzer;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Collections;
-import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +20,8 @@ import com.influxdb.client.write.Point;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 
-import okhttp3.MediaType;
+
+
 
 
 public class influxDBControllerTest {
@@ -125,7 +124,7 @@ public void setUp() {
 
 
     // Test for getServiceDataById method
-    
+
 
     
  
