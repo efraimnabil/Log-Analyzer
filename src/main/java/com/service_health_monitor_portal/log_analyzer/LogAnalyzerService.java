@@ -21,25 +21,30 @@ import java.util.stream.Stream;
 public class LogAnalyzerService {
 
     @Autowired
-    private InfluxDBService influxDBService;
+    private final InfluxDBService influxDBService;
+    private final ObjectMapper objectMapper;
+    private final String logFilePath;
 
     private static final Logger logger = LoggerFactory.getLogger(LogAnalyzerService.class);
 
-    @Value("${log.file.path}")
-    private String LOG_FILE_PATH;
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    public LogAnalyzerService(InfluxDBService influxDBService,
+                              @Value("${log.file.path}") String logFilePath,
+                              ObjectMapper objectMapper) {
+        this.influxDBService = influxDBService;
+        this.logFilePath = logFilePath;
+        this.objectMapper = objectMapper;
+    }
 
     @Scheduled(fixedRate = 6000)
     public void analyzeLogs() {
-        try (Stream<String> stream = Files.lines(Paths.get(LOG_FILE_PATH))) {
+        try (Stream<String> stream = Files.lines(Paths.get(logFilePath))) {
             stream.forEach(this::processLogLine);
         } catch (IOException e) {
             logger.error("Error reading log file", e);
         }
     }
 
-    private void processLogLine(String logLine) {
+    void processLogLine(String logLine) {
         try {
             if (isValidJson(logLine)) {
                 JsonNode logNode = objectMapper.readTree(logLine);
@@ -68,7 +73,7 @@ public class LogAnalyzerService {
         }
     }
 
-    private Instant getTimestamp(JsonNode logNode) {
+    Instant getTimestamp(JsonNode logNode) {
         JsonNode timestamp = logNode.get("@timestamp");
         Instant instant = Instant.now();
         if (timestamp == null) {
@@ -80,12 +85,13 @@ public class LogAnalyzerService {
         return instant;
     }
 
-    private boolean isValidJson(String logLine) {
+    boolean isValidJson(String logLine) {
         try {
-            objectMapper.readTree(logLine);
+            final ObjectMapper mapper = new ObjectMapper();
+            mapper.readTree(logLine);
             return true;
-        } catch (IOException e) {
+         } catch (IOException e) {
             return false;
-        }
+         }
     }
 }

@@ -1,7 +1,0 @@
-spring.application.name=Log_Analyzer
-influxdb.url=http://localhost:8086
-influxdb.token=abc
-influxdb.bucket=abc
-influxdb.org=abc
-influxdb.password=abc
-log.file.path=src/main/resources/logs/simulated.log
