@@ -1,8 +1,10 @@
-package com.service_health_monitor_portal.log_analyzer;
+package com.service_health_monitor_portal.log_analyzer.controllers;
 
 import com.influxdb.client.write.Point;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
+import com.service_health_monitor_portal.log_analyzer.InfluxDBService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
