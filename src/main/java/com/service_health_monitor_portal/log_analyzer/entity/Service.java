@@ -1,5 +1,6 @@
 package com.service_health_monitor_portal.log_analyzer.entity;
-import javax.persistence.*;
+
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "services")

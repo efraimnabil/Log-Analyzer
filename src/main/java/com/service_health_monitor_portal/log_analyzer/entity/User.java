@@ -1,13 +1,21 @@
 package com.service_health_monitor_portal.log_analyzer.entity;
-import javax.persistence.*;
+
+import lombok.Data;
+
 import java.util.List;
 
+import jakarta.persistence.*;
+
+@Data
 @Entity
 @Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
+    private String name;
 
     @Column(unique = true, nullable = false)
     private String email;
@@ -21,5 +29,4 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Service> services;
 
-    // Getters and setters
 }
