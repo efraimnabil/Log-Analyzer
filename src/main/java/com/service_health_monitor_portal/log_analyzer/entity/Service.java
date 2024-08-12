@@ -1,8 +1,14 @@
 package com.service_health_monitor_portal.log_analyzer.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
+@Data
 @Entity
+@Setter
+@Getter
 @Table(name = "services")
 public class Service {
     @Id
@@ -19,5 +25,4 @@ public class Service {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Getters and setters
 }
