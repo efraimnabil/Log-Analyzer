@@ -1,13 +1,12 @@
 package com.service_health_monitor_portal.log_analyzer;
 
-import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.Test;
 
 @SpringBootTest
-class LogAnalyzerApplicationTests {
+public class LogAnalyzerApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
-
+    @Test
+    void contextLoads() {
+    }
 }
