@@ -22,10 +22,38 @@ jobs:
           java-version: "17"
           distribution: "adopt"
 
+      - name: Update InfluxDB URL
+        run: sed -i 's#${INFLUXDB_URL}#${{ secrets.INFLUXDB_URL }}#' src/main/resources/application.properties
+
+      - name: Update InfluxDB Token
+        run: sed -i 's#${INFLUXDB_TOKEN}#${{ secrets.INFLUXDB_TOKEN }}#' src/main/resources/application.properties
+
+      - name: Update InfluxDB Bucket
+        run: sed -i 's#${INFLUXDB_BUCKET}#${{ secrets.INFLUXDB_BUCKET }}#' src/main/resources/application.properties
+
+      - name: Update InfluxDB Org
+        run: sed -i 's#${INFLUXDB_ORG}#${{ secrets.INFLUXDB_ORG }}#' src/main/resources/application.properties
+
+      - name: Update MySQL Database
+        run: sed -i 's#${MYSQL_DATABASE}#${{ secrets.MYSQL_DATABASE }}#' src/main/resources/application.properties
+
+      - name: Update MySQL Username
+        run: sed -i 's#${MYSQL_USERNAME}#${{ secrets.MYSQL_USERNAME }}#' src/main/resources/application.properties
+
+      - name: Update MySQL Password
+        run: sed -i 's#${MYSQL_PASSWORD}#${{ secrets.MYSQL_PASSWORD }}#' src/main/resources/application.properties
+
+      - name: Update JWT Secret Key
+        run: sed -i 's#${JWT_SECRET_KEY}#${{ secrets.JWT_SECRET_KEY }}#' src/main/resources/application.properties
+
+      - name: Update JWT Expiration Time
+        run: sed -i 's#${JWT_EXPIRATION_TIME}#${{ secrets.JWT_EXPIRATION_TIME }}#' src/main/resources/application.properties
+
+      - name: View updated application.properties
+        run: cat src/main/resources/application.properties
+
       - name: Build with Maven
-        run: |
-          mvn clean install -Dspring-boot.run.arguments=--influxdb.url=${{ secrets.INFLUXDB_URL }},--influxdb.token=${{ secrets.INFLUXDB_TOKEN }},--influxdb.bucket=${{ secrets.INFLUXDB_BUCKET }},--influxdb.org=${{ secrets.INFLUXDB_ORG }},--spring.datasource.url=jdbc:mysql://localhost:3306/${{ secrets.MYSQL_DATABASE }},--spring.datasource.username=${{ secrets.MYSQL_USERNAME }},--spring.datasource.password=${{ secrets.MYSQL_PASSWORD }},--security.jwt.secret-key=${{ secrets.JWT_SECRET_KEY }},--security.jwt.expiration-time=${{ secrets.JWT_EXPIRATION_TIME }}
+        run: mvn clean install
 
       - name: Run tests
-        run: |
-          mvn test -Dspring-boot.run.arguments=--influxdb.url=${{ secrets.INFLUXDB_URL }},--influxdb.token=${{ secrets.INFLUXDB_TOKEN }},--influxdb.bucket=${{ secrets.INFLUXDB_BUCKET }},--influxdb.org=${{ secrets.INFLUXDB_ORG }},--spring.datasource.url=jdbc:mysql://localhost:3306/${{ secrets.MYSQL_DATABASE }},--spring.datasource.username=${{ secrets.MYSQL_USERNAME }},--spring.datasource.password=${{ secrets.MYSQL_PASSWORD }},--security.jwt.secret-key=${{ secrets.JWT_SECRET_KEY }},--security.jwt.expiration-time=${{ secrets.JWT_EXPIRATION_TIME }}
+        run: mvn test
