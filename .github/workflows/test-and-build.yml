@@ -22,21 +22,17 @@ jobs:
           java-version: "17"
           distribution: "adopt"
 
-      - name: Create .env file
+      - name: Set environment variables
         run: |
-          echo "INFLUXDB_URL=${{ secrets.INFLUXDB_URL }}" >> .env
-          echo "INFLUXDB_TOKEN=${{ secrets.INFLUXDB_TOKEN }}" >> .env
-          echo "INFLUXDB_BUCKET=${{ secrets.INFLUXDB_BUCKET }}" >> .env
-          echo "INFLUXDB_ORG=${{ secrets.INFLUXDB_ORG }}" >> .env
-          echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> .env
-          echo "MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}" >> .env
-          echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env
-          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
-          echo "JWT_EXPIRATION_TIME=${{ secrets.JWT_EXPIRATION_TIME }}" >> .env
-
-      - name: Export environment variables
-        run: |
-          export $(cat .env | xargs)
+          echo "INFLUXDB_URL=${{ secrets.INFLUXDB_URL }}" >> $GITHUB_ENV
+          echo "INFLUXDB_TOKEN=${{ secrets.INFLUXDB_TOKEN }}" >> $GITHUB_ENV
+          echo "INFLUXDB_BUCKET=${{ secrets.INFLUXDB_BUCKET }}" >> $GITHUB_ENV
+          echo "INFLUXDB_ORG=${{ secrets.INFLUXDB_ORG }}" >> $GITHUB_ENV
+          echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> $GITHUB_ENV
+          echo "MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}" >> $GITHUB_ENV
+          echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> $GITHUB_ENV
+          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> $GITHUB_ENV
+          echo "JWT_EXPIRATION_TIME=${{ secrets.JWT_EXPIRATION_TIME }}" >> $GITHUB_ENV
 
       - name: Build with Maven
         run: mvn clean install
