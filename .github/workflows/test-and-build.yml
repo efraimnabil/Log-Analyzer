@@ -22,17 +22,32 @@ jobs:
           java-version: "17"
           distribution: "adopt"
 
-      - name: Set environment variables
-        run: |
-          echo "INFLUXDB_URL=${{ secrets.INFLUXDB_URL }}" >> $GITHUB_ENV
-          echo "INFLUXDB_TOKEN=${{ secrets.INFLUXDB_TOKEN }}" >> $GITHUB_ENV
-          echo "INFLUXDB_BUCKET=${{ secrets.INFLUXDB_BUCKET }}" >> $GITHUB_ENV
-          echo "INFLUXDB_ORG=${{ secrets.INFLUXDB_ORG }}" >> $GITHUB_ENV
-          echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> $GITHUB_ENV
-          echo "MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}" >> $GITHUB_ENV
-          echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> $GITHUB_ENV
-          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> $GITHUB_ENV
-          echo "JWT_EXPIRATION_TIME=${{ secrets.JWT_EXPIRATION_TIME }}" >> $GITHUB_ENV
+      - name: Update InfluxDB URL
+        run: sed -i 's#${INFLUXDB_URL}#${{ secrets.INFLUXDB_URL }}#' src/main/resources/application.properties
+
+      - name: Update InfluxDB Token
+        run: sed -i 's#${INFLUXDB_TOKEN}#${{ secrets.INFLUXDB_TOKEN }}#' src/main/resources/application.properties
+
+      - name: Update InfluxDB Bucket
+        run: sed -i 's#${INFLUXDB_BUCKET}#${{ secrets.INFLUXDB_BUCKET }}#' src/main/resources/application.properties
+
+      - name: Update InfluxDB Org
+        run: sed -i 's#${INFLUXDB_ORG}#${{ secrets.INFLUXDB_ORG }}#' src/main/resources/application.properties
+
+      - name: Update MySQL Database
+        run: sed -i 's#${MYSQL_DATABASE}#${{ secrets.MYSQL_DATABASE }}#' src/main/resources/application.properties
+
+      - name: Update MySQL Username
+        run: sed -i 's#${MYSQL_USERNAME}#${{ secrets.MYSQL_USERNAME }}#' src/main/resources/application.properties
+
+      - name: Update MySQL Password
+        run: sed -i 's#${MYSQL_PASSWORD}#${{ secrets.MYSQL_PASSWORD }}#' src/main/resources/application.properties
+
+      - name: Update JWT Secret Key
+        run: sed -i 's#${JWT_SECRET_KEY}#${{ secrets.JWT_SECRET_KEY }}#' src/main/resources/application.properties
+
+      - name: Update JWT Expiration Time
+        run: sed -i 's#${JWT_EXPIRATION_TIME}#${{ secrets.JWT_EXPIRATION_TIME }}#' src/main/resources/application.properties
 
       - name: Build with Maven
         run: mvn clean install
