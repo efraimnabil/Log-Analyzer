@@ -13,36 +13,32 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DB_DATABASE: test_db
-      DB_USER: root
-      DB_PASSWORD: root
+      DB_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+      DB_USER: ${{ secrets.MYSQL_USERNAME }}
+      DB_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
       INFLUXDB_URL: ${{ secrets.INFLUXDB_URL }}
       INFLUXDB_TOKEN: ${{ secrets.INFLUXDB_TOKEN }}
       INFLUXDB_ORG: ${{ secrets.INFLUXDB_ORG }}
       INFLUXDB_BUCKET: ${{ secrets.INFLUXDB_BUCKET }}
-      # MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
-      # MYSQL_USERNAME: ${{ secrets.MYSQL_USERNAME }}
-      # MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
       JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
       JWT_EXPIRATION_TIME: ${{ secrets.JWT_EXPIRATION_TIME }}
-
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-
-      - name: Start MySQL
-        run: |
-          sudo /etc/init.d/mysql start
-          mysql -e "CREATE DATABASE IF NOT EXISTS $DB_DATABASE;" -u$DB_USER -p$DB_PASSWORD
-    # Add more steps for testing and other tasks
 
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
           java-version: "17"
           distribution: "adopt"
+
+      - name: Start MySQL service
+        run: |
+          docker pull mysql:8.0
+          docker run --name mysql -e MYSQL_ROOT_PASSWORD=$DB_PASSWORD -e MYSQL_DATABASE=$DB_DATABASE -e MYSQL_USER=$DB_USER -e MYSQL_PASSWORD=$DB_PASSWORD -p 3306:3306 -d mysql:8.0
+          sleep 30 # Wait for MySQL to start up (adjust the sleep time as needed)
+          docker exec mysql mysql -e "CREATE DATABASE IF NOT EXISTS $DB_DATABASE;" -u$DB_USER -p$DB_PASSWORD
 
       - name: Build with Maven
         run: mvn clean install 
