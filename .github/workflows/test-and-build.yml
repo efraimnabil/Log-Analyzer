@@ -23,18 +23,17 @@ jobs:
           distribution: "adopt"
 
       - name: Deploy to Server
-        run: |
-          env:
-            INFLUXDB_URL: ${{ secrets.INFLUXDB_URL }}
-            INFLUXDB_TOKEN: ${{ secrets.INFLUXDB_TOKEN }}
-            INFLUXDB_ORG: ${{ secrets.INFLUXDB_ORG }}
-            INFLUXDB_BUCKET: ${{ secrets.INFLUXDB_BUCKET }}
-            MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
-            MYSQL_USERNAME: ${{ secrets.MYSQL_USERNAME }}
-            MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-            JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-            JWT_EXPIRATION_TIME: ${{ secrets.JWT_EXPIRATION_TIME }}
-          echo "Deploying to server..."
+        env:
+          INFLUXDB_URL: ${{ secrets.INFLUXDB_URL }}
+          INFLUXDB_TOKEN: ${{ secrets.INFLUXDB_TOKEN }}
+          INFLUXDB_ORG: ${{ secrets.INFLUXDB_ORG }}
+          INFLUXDB_BUCKET: ${{ secrets.INFLUXDB_BUCKET }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USERNAME: ${{ secrets.MYSQL_USERNAME }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          JWT_EXPIRATION_TIME: ${{ secrets.JWT_EXPIRATION_TIME }}
+        run: echo "Deploying to server..."
 
       - name: Build with Maven
         run: mvn clean install 
