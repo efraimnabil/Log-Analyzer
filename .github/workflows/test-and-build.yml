@@ -36,7 +36,7 @@ jobs:
       - name: Start MySQL service
         run: |
           docker pull mysql:8.0
-          docker run --name mysql -e MYSQL_ROOT_PASSWORD=$DB_PASSWORD -e MYSQL_DATABASE=$DB_DATABASE -e MYSQL_USER=$DB_USER -e MYSQL_PASSWORD=$DB_PASSWORD -p 3306:3306 -d mysql:8.0
+          docker run --name mysql -e MYSQL_ROOT_PASSWORD=$DB_PASSWORD -e MYSQL_DATABASE=$DB_DATABASE -p 3306:3306 -d mysql:8.0
           sleep 60 # Increase wait time to ensure MySQL is fully initialized
 
       - name: Check MySQL container logs
@@ -47,7 +47,7 @@ jobs:
 
       - name: Create Database
         run: |
-          docker exec mysql mysql -e "CREATE DATABASE IF NOT EXISTS $DB_DATABASE;" -u$DB_USER -p$DB_PASSWORD
+          docker exec mysql mysql -e "CREATE DATABASE IF NOT EXISTS $DB_DATABASE;" -uroot -p$DB_PASSWORD
 
       - name: Build with Maven
         run: mvn clean install 
