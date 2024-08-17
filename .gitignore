@@ -34,3 +34,4 @@ build/
 Dockerfile
 
 .env
+secret.properties
