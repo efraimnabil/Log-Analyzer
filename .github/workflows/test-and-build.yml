@@ -35,6 +35,15 @@ jobs:
           JWT_EXPIRATION_TIME: ${{ secrets.JWT_EXPIRATION_TIME }}
         run: echo "Deploying to server..."
 
+      - name: Set up environment
+        run: |
+          echo "Setting up environment"
+          export DB_PASSWORD=${{ secrets.DATABASE_PASSWORD }}
+
+          - name: Deploy Application
+            run: |
+              echo "Deploying application with password $DB_PASSWORD"
+
       - name: Build with Maven
         run: mvn clean install 
 
