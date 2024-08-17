@@ -1,56 +1,47 @@
-name: Test and Build
-
-on:
-  push:
-    branches:
-      - "*"
-  pull_request:
-    branches:
-      - "*"
-
+name: tests
+on: 
+    push: 
+    pull_request:
 jobs:
-  build:
+  run_tests:
     runs-on: ubuntu-latest
-
-    env:
-      DB_DATABASE: ${{ secrets.MYSQL_DATABASE }}
-      DB_USER: ${{ secrets.MYSQL_USERNAME }}
-      DB_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-      INFLUXDB_URL: ${{ secrets.INFLUXDB_URL }}
-      INFLUXDB_TOKEN: ${{ secrets.INFLUXDB_TOKEN }}
-      INFLUXDB_ORG: ${{ secrets.INFLUXDB_ORG }}
-      INFLUXDB_BUCKET: ${{ secrets.INFLUXDB_BUCKET }}
-      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-      JWT_EXPIRATION_TIME: ${{ secrets.JWT_EXPIRATION_TIME }}
-
+    strategy:
+      matrix:
+        mysql-version: ['5.7', '8.0']
+    services:
+      mysql:
+        image: mysql:${{ matrix.mysql-version }}
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     steps:
-      - name: Checkout code
+      - name: Checkout the repository
         uses: actions/checkout@v2
 
-      - name: Set up JDK
-        uses: actions/setup-java@v2
+      - name: Set up JDK 17
+        uses: actions/setup-java@v1
         with:
-          java-version: "17"
-          distribution: "adopt"
+          java-version: 17
 
-      - name: Start MySQL service
-        run: |
-          docker pull mysql:8.0
-          docker run --name mysql -e MYSQL_ROOT_PASSWORD=$DB_PASSWORD -e MYSQL_DATABASE=$DB_DATABASE -p 3306:3306 -d mysql:8.0
-          sleep 60 # Increase wait time to ensure MySQL is fully initialized
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
 
-      - name: Check MySQL container logs
-        run: docker logs mysql
-
-      - name: Check MySQL container status
-        run: docker ps -a
-
-      - name: Create Database
-        run: |
-          docker exec mysql mysql -e "CREATE DATABASE IF NOT EXISTS $DB_DATABASE;" -uroot -p$DB_PASSWORD
-
-      - name: Build with Maven
-        run: mvn clean install 
-
-      - name: Run tests
+      - name: Run tests with Maven
         run: mvn -B test -e -X --file pom.xml
+        env:
+          MYSQL_URL: jdbc:mysql://localhost:3306/${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USERNAME: root
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+    env:
+        CI: true
