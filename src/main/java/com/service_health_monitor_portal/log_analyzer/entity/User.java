@@ -1,21 +1,26 @@
 package com.service_health_monitor_portal.log_analyzer.entity;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @Entity
-@Setter
-@Getter
 @Table(name = "users")
 public class User implements UserDetails {
     @Id
@@ -31,8 +36,8 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private java.sql.Timestamp createdAt;
+    @Column(nullable = false, updatable = false)
+    private Timestamp createdAt;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ServiceEntity> services;
