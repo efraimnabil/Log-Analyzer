@@ -35,7 +35,7 @@ public class User implements UserDetails {
     private java.sql.Timestamp createdAt;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Service> services;
+    private List<ServiceEntity> services;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
