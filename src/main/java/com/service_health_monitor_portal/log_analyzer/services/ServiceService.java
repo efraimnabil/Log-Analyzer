@@ -4,11 +4,12 @@ import java.sql.Timestamp;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.service_health_monitor_portal.log_analyzer.entity.ServiceEntity;
 import com.service_health_monitor_portal.log_analyzer.entity.User;
-import com.service_health_monitor_portal.log_analyzer.repository.UserRepository;
 import com.service_health_monitor_portal.log_analyzer.repository.ServiceRepository;
-import org.springframework.stereotype.Service;
+import com.service_health_monitor_portal.log_analyzer.repository.UserRepository;
 
 @Service
 public class ServiceService {

@@ -6,28 +6,24 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.service_health_monitor_portal.log_analyzer.entity.User;
+import com.service_health_monitor_portal.log_analyzer.dto.LoginResponseDTO;
 import com.service_health_monitor_portal.log_analyzer.dto.LoginUserDTO;
 import com.service_health_monitor_portal.log_analyzer.dto.RegisterUserDTO;
+import com.service_health_monitor_portal.log_analyzer.entity.User;
 import com.service_health_monitor_portal.log_analyzer.repository.UserRepository;
 
+import lombok.AllArgsConstructor;
+
 @Service
+@AllArgsConstructor
 public class AuthenticationService {
+    private final JwtService jwtService;
+
     private final UserRepository userRepository;
     
     private final PasswordEncoder passwordEncoder;
     
     private final AuthenticationManager authenticationManager;
-
-    public AuthenticationService(
-        UserRepository userRepository,
-        AuthenticationManager authenticationManager,
-        PasswordEncoder passwordEncoder
-    ) {
-        this.authenticationManager = authenticationManager;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     public User signup(RegisterUserDTO input) {
         User user = new User();
@@ -40,18 +36,25 @@ public class AuthenticationService {
         return user;
     }
 
-    public User authenticate(LoginUserDTO input) {
-        System.out.println("before authenticate");
+    public User authenticateUser(LoginUserDTO input) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         input.getEmail(),
                         input.getPassword()
                 )
         );
-        System.out.println("after authenticate");
-        System.out.println(userRepository.findByEmail(input.getEmail()));
         return userRepository.findByEmail(input.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+    }
+
+    public LoginResponseDTO authenticate(LoginUserDTO loginUserDto) {
+        User authenticatedUser = authenticateUser(loginUserDto);
+        String jwtToken = jwtService.generateToken(authenticatedUser);
+
+        LoginResponseDTO loginResponse = new LoginResponseDTO();
+        loginResponse.setToken(jwtToken);
+        loginResponse.setExpiresIn(jwtService.getExpirationTime());
+        return loginResponse;
     }
 }
