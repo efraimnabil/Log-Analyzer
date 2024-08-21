@@ -7,8 +7,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.service_health_monitor_portal.log_analyzer.entity.User;
-import com.service_health_monitor_portal.log_analyzer.dto.LoginUserDto;
-import com.service_health_monitor_portal.log_analyzer.dto.RegisterUserDto;
+import com.service_health_monitor_portal.log_analyzer.dto.LoginUserDTO;
+import com.service_health_monitor_portal.log_analyzer.dto.RegisterUserDTO;
 import com.service_health_monitor_portal.log_analyzer.repository.UserRepository;
 
 @Service
@@ -29,7 +29,7 @@ public class AuthenticationService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User signup(RegisterUserDto input) {
+    public User signup(RegisterUserDTO input) {
         User user = new User();
         user.setName(input.getName());
         user.setEmail(input.getEmail());
@@ -40,7 +40,7 @@ public class AuthenticationService {
         return user;
     }
 
-    public User authenticate(LoginUserDto input) {
+    public User authenticate(LoginUserDTO input) {
         System.out.println("before authenticate");
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
