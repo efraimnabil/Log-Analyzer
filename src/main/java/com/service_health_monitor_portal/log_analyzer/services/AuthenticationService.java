@@ -1,5 +1,7 @@
 package com.service_health_monitor_portal.log_analyzer.services;
 
+import java.util.Optional;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -10,6 +12,7 @@ import com.service_health_monitor_portal.log_analyzer.dto.LoginResponseDTO;
 import com.service_health_monitor_portal.log_analyzer.dto.LoginUserDTO;
 import com.service_health_monitor_portal.log_analyzer.dto.RegisterUserDTO;
 import com.service_health_monitor_portal.log_analyzer.entity.User;
+import com.service_health_monitor_portal.log_analyzer.excetions.ResourceNotFoundException;
 import com.service_health_monitor_portal.log_analyzer.repository.UserRepository;
 
 import lombok.AllArgsConstructor;
@@ -49,6 +52,14 @@ public class AuthenticationService {
     }
 
     public LoginResponseDTO authenticate(LoginUserDTO loginUserDto) {
+        Optional<User> user = userRepository.findByEmail(loginUserDto.getEmail());
+        if (user.isEmpty()) {
+            throw new ResourceNotFoundException("User", "email or password", loginUserDto.getEmail());
+        }
+        if (!passwordEncoder.matches(loginUserDto.getPassword(), user.get().getPassword())) {
+            throw new ResourceNotFoundException("User", "email or password", loginUserDto.getEmail());
+        }
+
         User authenticatedUser = authenticateUser(loginUserDto);
         String jwtToken = jwtService.generateToken(authenticatedUser);
 
