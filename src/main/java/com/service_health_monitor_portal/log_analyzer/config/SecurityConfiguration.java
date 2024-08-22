@@ -1,5 +1,7 @@
 package com.service_health_monitor_portal.log_analyzer.config;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -12,7 +14,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
+import com.service_health_monitor_portal.log_analyzer.filter.JwtAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -32,7 +34,8 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/api/login").permitAll()
+                .requestMatchers("/api/signup").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

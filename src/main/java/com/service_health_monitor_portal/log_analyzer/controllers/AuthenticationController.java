@@ -16,7 +16,7 @@ import com.service_health_monitor_portal.log_analyzer.services.AuthenticationSer
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
-@RequestMapping("/auth")
+@RequestMapping("/api")
 @RestController
 @Validated
 @AllArgsConstructor

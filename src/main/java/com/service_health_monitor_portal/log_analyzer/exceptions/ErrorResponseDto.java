@@ -1,4 +1,4 @@
-package com.service_health_monitor_portal.log_analyzer.excetions;
+package com.service_health_monitor_portal.log_analyzer.exceptions;
 
 import java.time.LocalDateTime;
 

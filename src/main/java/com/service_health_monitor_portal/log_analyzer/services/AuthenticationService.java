@@ -12,7 +12,7 @@ import com.service_health_monitor_portal.log_analyzer.dto.LoginResponseDTO;
 import com.service_health_monitor_portal.log_analyzer.dto.LoginUserDTO;
 import com.service_health_monitor_portal.log_analyzer.dto.RegisterUserDTO;
 import com.service_health_monitor_portal.log_analyzer.entity.User;
-import com.service_health_monitor_portal.log_analyzer.excetions.ResourceNotFoundException;
+import com.service_health_monitor_portal.log_analyzer.exceptions.ResourceNotFoundException;
 import com.service_health_monitor_portal.log_analyzer.repository.UserRepository;
 
 import lombok.AllArgsConstructor;

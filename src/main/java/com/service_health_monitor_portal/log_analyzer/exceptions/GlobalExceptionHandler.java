@@ -1,4 +1,4 @@
-package com.service_health_monitor_portal.log_analyzer.excetions;
+package com.service_health_monitor_portal.log_analyzer.exceptions;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -18,7 +18,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
  
 @ControllerAdvice
-public class GlobalExeptionHandler extends ResponseEntityExceptionHandler {
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
@@ -65,5 +65,17 @@ public class GlobalExeptionHandler extends ResponseEntityExceptionHandler {
                 exception.getMessage(),
                 LocalDateTime.now());
         return new ResponseEntity<>(errorResponseDTO, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(JWTEmptyOrNotValid.class)
+    public ResponseEntity<ErrorResponseDto> handleJWTEmptyOrNotValid(
+            JWTEmptyOrNotValid exception,
+            WebRequest webRequest) {
+        ErrorResponseDto errorResponseDTO = new ErrorResponseDto(
+                webRequest.getDescription(false),
+                HttpStatus.UNAUTHORIZED,
+                exception.getMessage(),
+                LocalDateTime.now());
+        return new ResponseEntity<>(errorResponseDTO, HttpStatus.UNAUTHORIZED);
     }
 }
