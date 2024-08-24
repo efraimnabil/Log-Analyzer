@@ -34,7 +34,7 @@ public class ServiceController {
         ServiceEntity service = serviceService.addService(userId, serviceDTO.getName());
         return new ResponseEntity<>(service, HttpStatus.CREATED);
     }
-
+    
     @GetMapping("/{id}")
     public ResponseEntity<ServiceEntity> getService(@PathVariable @NotNull Long id) {
         ServiceEntity service = serviceService.getService(id);
@@ -42,7 +42,20 @@ public class ServiceController {
     }
 
     @GetMapping
+    public ResponseEntity<Iterable<ServiceEntity>> getAllServices(
+            @RequestParam(required = false) Long userId) {
+        Iterable<ServiceEntity> services;
+        if (userId != null) {
+            services = serviceService.getAllServices(userId);
+        } else {
+            services = serviceService.getAllServices();
+        }
+        return new ResponseEntity<>(services, HttpStatus.OK);
+    }
+
+    @GetMapping("/all")
     public ResponseEntity<Iterable<ServiceEntity>> getAllServices() {
-        return new ResponseEntity<>(serviceService.getAllServices(), HttpStatus.OK);
+        Iterable<ServiceEntity> services = serviceService.getAllServices();
+        return new ResponseEntity<>(services, HttpStatus.OK);
     }
 }

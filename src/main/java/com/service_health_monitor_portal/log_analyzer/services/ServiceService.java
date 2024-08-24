@@ -41,6 +41,10 @@ public class ServiceService {
         throw new RuntimeException("Service not found");
     }
 
+    public Iterable<ServiceEntity> getAllServices(Long userId) {
+        return serviceRepository.findByUserId(userId);
+    }
+
     public Iterable<ServiceEntity> getAllServices() {
         return serviceRepository.findAll();
     }
