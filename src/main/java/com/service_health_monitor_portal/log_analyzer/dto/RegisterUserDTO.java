@@ -19,6 +19,6 @@ public class RegisterUserDTO {
     private String email;
     
     @NotNull(message = "Password is required")
-    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-zA-Z]).{8,}$", message = "Password must contain at least 8 alphanumeric characters")
+    @Pattern(regexp = ".{8,}", message = "Password must be at least 8 characters long")
     private String password;
 }

@@ -1,9 +1,11 @@
-package com.service_health_monitor_portal.log_analyzer;
+package com.service_health_monitor_portal.log_analyzer.services;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.influxdb.client.domain.WritePrecision;
-import com.influxdb.client.write.Point;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.Instant;
+import java.util.stream.Stream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,11 +13,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.Instant;
-import java.util.stream.Stream;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.influxdb.client.domain.WritePrecision;
+import com.influxdb.client.write.Point;
 
 @Service
 public class LogAnalyzerService {
@@ -35,7 +36,7 @@ public class LogAnalyzerService {
         this.objectMapper = objectMapper;
     }
 
-    @Scheduled(fixedRate = 6000)
+    @Scheduled(fixedRate = 60000)
     public void analyzeLogs() {
         try (Stream<String> stream = Files.lines(Paths.get(logFilePath))) {
             stream.forEach(this::processLogLine);
@@ -44,7 +45,7 @@ public class LogAnalyzerService {
         }
     }
 
-    void processLogLine(String logLine) {
+    public void processLogLine(String logLine) {
         try {
             if (isValidJson(logLine)) {
                 JsonNode logNode = objectMapper.readTree(logLine);
@@ -73,7 +74,7 @@ public class LogAnalyzerService {
         }
     }
 
-    Instant getTimestamp(JsonNode logNode) {
+    public Instant getTimestamp(JsonNode logNode) {
         JsonNode timestamp = logNode.get("@timestamp");
         Instant instant = Instant.now();
         if (timestamp == null) {
@@ -85,7 +86,7 @@ public class LogAnalyzerService {
         return instant;
     }
 
-    boolean isValidJson(String logLine) {
+    public boolean isValidJson(String logLine) {
         try {
             final ObjectMapper mapper = new ObjectMapper();
             mapper.readTree(logLine);

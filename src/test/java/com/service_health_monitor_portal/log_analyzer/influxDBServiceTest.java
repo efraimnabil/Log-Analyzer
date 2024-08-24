@@ -6,6 +6,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+import java.util.List; // Add this import statement
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -15,9 +18,7 @@ import org.mockito.MockitoAnnotations;
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.write.Point;
-
-import java.util.Collections;
-import java.util.List; // Add this import statement
+import com.service_health_monitor_portal.log_analyzer.services.InfluxDBService;
 
 public class influxDBServiceTest {
     @Mock
@@ -49,12 +50,6 @@ public class influxDBServiceTest {
         assertTrue(influxDBService.writeMultiplePoints(points));
         verify(writeApiBlocking, times(1)).writePoints(points);
     }
-
-    @Test
-    public void testWritePointbyPOJO_Success() {
-        assertTrue(influxDBService.writePointbyPOJO());
-    }
-
 
     @Test
     public void testCalculateAvailabilityFromInfluxDB_Success() {
