@@ -19,8 +19,10 @@ public class InfluxDBService {
     private InfluxDBClient influxDBClient;
 
     public boolean singlePointWrite(Point point) {
+        System.out.println("From InfluxDBService.java");
         boolean flag = false;
         try {
+            System.out.println("Writing point to InfluxDB...");
             WriteApiBlocking writeApi = influxDBClient.getWriteApiBlocking();
 
             writeApi.writePoint(point);
@@ -67,6 +69,7 @@ public class InfluxDBService {
     // }
 
     public List<FluxTable> queryData(String flux) {
+        System.out.println("Querying data from InfluxDB...");
         QueryApi queryApi = influxDBClient.getQueryApi();
         List<FluxTable> tables = queryApi.query(flux);
         return tables;

@@ -66,6 +66,9 @@ public class AuthenticationService {
         LoginResponseDTO loginResponse = new LoginResponseDTO();
         loginResponse.setToken(jwtToken);
         loginResponse.setExpiresIn(jwtService.getExpirationTime());
+        loginResponse.setId(authenticatedUser.getId());
+        loginResponse.setName(authenticatedUser.getName());
+        loginResponse.setEmail(authenticatedUser.getEmail());
         return loginResponse;
     }
 }

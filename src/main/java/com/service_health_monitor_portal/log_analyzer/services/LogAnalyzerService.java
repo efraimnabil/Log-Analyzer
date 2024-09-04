@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -35,23 +34,30 @@ public class LogAnalyzerService {
         this.logFilePath = logFilePath;
         this.objectMapper = objectMapper;
     }
-
-    @Scheduled(fixedRate = 60000)
+    
     public void analyzeLogs() {
+        System.out.println("Analyzing logs...");
         try (Stream<String> stream = Files.lines(Paths.get(logFilePath))) {
+            System.out.println("Reading log file...");
             stream.forEach(this::processLogLine);
         } catch (IOException e) {
+            System.out.println("Error reading log file");
             logger.error("Error reading log file", e);
         }
     }
 
     public void processLogLine(String logLine) {
+        System.out.println(logLine);
+
         try {
             if (isValidJson(logLine)) {
+                System.out.println("Extracting service log...");
                 JsonNode logNode = objectMapper.readTree(logLine);
                 if (logNode.has("service_log")) {
+                    System.out.println("Extracted service log...");
                     JsonNode serviceLogNode = logNode.get("service_log");
                     logger.info("Extracted service log: {}", serviceLogNode.get("name"));
+                    System.out.println("Extracted service log: " + serviceLogNode.get("name"));
 
                     Instant instant = getTimestamp(logNode);
                     String serviceName = serviceLogNode.get("name").asText();
@@ -63,13 +69,19 @@ public class LogAnalyzerService {
                             .addTag("id", serviceId)
                             .addField("status", serviceStatus)
                             .time(instant, WritePrecision.MS);
+                    System.out.println("Service Health point: " + point);
+                    System.out.println("name: " + serviceName);
+                    System.out.println("id: " + serviceId);
+                    System.out.println("status: " + serviceStatus);
 
                     influxDBService.singlePointWrite(point);
                 }
             } else {
+                System.out.println("Invalid JSON format...");
                 logger.warn("Invalid JSON format: {}", logLine);
             }
         } catch (IOException e) {
+            System.out.println("Error parsing log line");
             logger.error("Error parsing log line", e);
         }
     }
