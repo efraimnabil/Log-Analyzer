@@ -36,12 +36,9 @@ public class LogAnalyzerService {
     }
     
     public void analyzeLogs() {
-        System.out.println("Analyzing logs...");
         try (Stream<String> stream = Files.lines(Paths.get(logFilePath))) {
-            System.out.println("Reading log file...");
             stream.forEach(this::processLogLine);
         } catch (IOException e) {
-            System.out.println("Error reading log file");
             logger.error("Error reading log file", e);
         }
     }
@@ -51,13 +48,10 @@ public class LogAnalyzerService {
 
         try {
             if (isValidJson(logLine)) {
-                System.out.println("Extracting service log...");
                 JsonNode logNode = objectMapper.readTree(logLine);
                 if (logNode.has("service_log")) {
-                    System.out.println("Extracted service log...");
                     JsonNode serviceLogNode = logNode.get("service_log");
                     logger.info("Extracted service log: {}", serviceLogNode.get("name"));
-                    System.out.println("Extracted service log: " + serviceLogNode.get("name"));
 
                     Instant instant = getTimestamp(logNode);
                     String serviceName = serviceLogNode.get("name").asText();
@@ -77,11 +71,9 @@ public class LogAnalyzerService {
                     influxDBService.singlePointWrite(point);
                 }
             } else {
-                System.out.println("Invalid JSON format...");
                 logger.warn("Invalid JSON format: {}", logLine);
             }
         } catch (IOException e) {
-            System.out.println("Error parsing log line");
             logger.error("Error parsing log line", e);
         }
     }
