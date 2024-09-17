@@ -1,4 +1,4 @@
-package com.service_health_monitor_portal.log_analyzer;
+package com.service_health_monitor_portal.log_analyzer.config;
 
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;

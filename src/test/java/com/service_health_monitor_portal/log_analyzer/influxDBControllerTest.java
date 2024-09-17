@@ -2,9 +2,12 @@ package com.service_health_monitor_portal.log_analyzer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Collections;
 
@@ -20,6 +23,7 @@ import com.influxdb.client.write.Point;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import com.service_health_monitor_portal.log_analyzer.controllers.InfluxDBController;
+import com.service_health_monitor_portal.log_analyzer.services.InfluxDBService;
 
 
 
@@ -122,13 +126,6 @@ public void setUp() {
         verify(influxDBService).queryData(anyString());
     }
 
-
-
-    // Test for getServiceDataById method
-
-
-    
- 
 
    
 }

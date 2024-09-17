@@ -1,7 +1,5 @@
 package com.service_health_monitor_portal.log_analyzer.config;
 
-import com.service_health_monitor_portal.log_analyzer.entity.User;
-import com.service_health_monitor_portal.log_analyzer.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,6 +9,8 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import com.service_health_monitor_portal.log_analyzer.repository.UserRepository;
 
 @Configuration
 public class ApplicationConfiguration {
