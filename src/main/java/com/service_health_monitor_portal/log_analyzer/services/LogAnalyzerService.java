@@ -28,13 +28,13 @@ public class LogAnalyzerService {
     private static final Logger logger = LoggerFactory.getLogger(LogAnalyzerService.class);
 
     public LogAnalyzerService(InfluxDBService influxDBService,
-                              @Value("${log.file.path}") String logFilePath,
-                              ObjectMapper objectMapper) {
+            @Value("${log.file.path}") String logFilePath,
+            ObjectMapper objectMapper) {
         this.influxDBService = influxDBService;
         this.logFilePath = logFilePath;
         this.objectMapper = objectMapper;
     }
-    
+
     public void analyzeLogs() {
         try (Stream<String> stream = Files.lines(Paths.get(logFilePath))) {
             stream.forEach(this::processLogLine);
@@ -44,8 +44,6 @@ public class LogAnalyzerService {
     }
 
     public void processLogLine(String logLine) {
-        System.out.println(logLine);
-
         try {
             if (isValidJson(logLine)) {
                 JsonNode logNode = objectMapper.readTree(logLine);
@@ -63,10 +61,6 @@ public class LogAnalyzerService {
                             .addTag("id", serviceId)
                             .addField("status", serviceStatus)
                             .time(instant, WritePrecision.MS);
-                    System.out.println("Service Health point: " + point);
-                    System.out.println("name: " + serviceName);
-                    System.out.println("id: " + serviceId);
-                    System.out.println("status: " + serviceStatus);
 
                     influxDBService.singlePointWrite(point);
                 }
@@ -95,8 +89,8 @@ public class LogAnalyzerService {
             final ObjectMapper mapper = new ObjectMapper();
             mapper.readTree(logLine);
             return true;
-         } catch (IOException e) {
+        } catch (IOException e) {
             return false;
-         }
+        }
     }
 }
