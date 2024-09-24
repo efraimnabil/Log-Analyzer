@@ -15,7 +15,6 @@ import org.springframework.web.client.RestTemplate;
 import com.service_health_monitor_portal.log_analyzer.entity.ServiceEntity;
 import com.service_health_monitor_portal.log_analyzer.entity.User;
 import com.service_health_monitor_portal.log_analyzer.repository.ServiceRepository;
-import com.service_health_monitor_portal.log_analyzer.repository.UserRepository;
 
 @Service
 public class ServiceService {
@@ -24,55 +23,49 @@ public class ServiceService {
     private ServiceRepository serviceRepository;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private RestTemplate restTemplate;
 
-    public ServiceEntity addService(Long userId, String name) {
-        Optional<User> userOpt = userRepository.findById(userId);
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            ServiceEntity service = new ServiceEntity();
-            service.setName(name);
-            service.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-            service.setUser(user);
+    public ServiceEntity addService(User user, String serviceName) {
+        ServiceEntity service = new ServiceEntity();
+        service.setName(serviceName);
+        service.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        service.setUser(user);
 
-            ServiceEntity savedService = serviceRepository.save(service);
+        ServiceEntity savedService = serviceRepository.save(service);
 
-            String simulatorUrl = "http://localhost:7000/api/services";
+        // TODO: Move this to a separate service {SimulatorService}
+        String simulatorUrl = "http://localhost:7000/api/services";
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("id", savedService.getId());
-            requestBody.put("name", savedService.getName());
-            requestBody.put("createdAt", savedService.getCreatedAt());
-            requestBody.put("userId", savedService.getUser().getId());
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("id", savedService.getId());
+        requestBody.put("name", savedService.getName());
+        requestBody.put("createdAt", savedService.getCreatedAt());
+        requestBody.put("userId", savedService.getUser().getId());
 
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
-            restTemplate.postForEntity(simulatorUrl, request, String.class);
-
-            return savedService;
-        }
-        throw new RuntimeException("User not found");
+        restTemplate.postForEntity(simulatorUrl, request, String.class);
+        // Till here
+        return savedService;
     }
 
     public ServiceEntity getService(Long id) {
-        Optional<ServiceEntity> serviceOpt = serviceRepository.findById(id);
-        if (serviceOpt.isPresent()) {
-            return serviceOpt.get();
-        }
-        throw new RuntimeException("Service not found");
+        Optional<ServiceEntity> service = serviceRepository.findById(id);
+        return service.orElseThrow(() -> new RuntimeException("Service not found"));
     }
 
-    public Iterable<ServiceEntity> getAllServices(Long userId) {
+    public Iterable<ServiceEntity> getAllServices(Integer userId) {
         return serviceRepository.findByUserId(userId);
     }
 
     public Iterable<ServiceEntity> getAllServices() {
         return serviceRepository.findAll();
+    }
+
+    public void deleteService(ServiceEntity service) {
+        serviceRepository.delete(service);
     }
 }
