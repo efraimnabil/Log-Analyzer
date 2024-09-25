@@ -19,7 +19,7 @@ public class LogAnalyzerApplication {
         SpringApplication.run(LogAnalyzerApplication.class, args);
     }
 
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 600000)
     public void scheduledLogAnalysis() {
         logAnalyzerService.analyzeLogs();
     }
