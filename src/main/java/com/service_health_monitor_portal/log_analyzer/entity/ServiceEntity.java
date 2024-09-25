@@ -32,6 +32,9 @@ public class ServiceEntity {
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    private String description;
+
     @Column(nullable = false, updatable = false)
     private Timestamp createdAt;
 

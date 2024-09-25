@@ -39,8 +39,9 @@ public class ServiceController {
     public ResponseEntity<ServiceEntity> addService(
             @RequestBody @Valid ServiceDTO serviceDTO, Principal principal) {
         try {
+            System.out.println(serviceDTO);
             User user = userService.getUser(principal.getName());
-            ServiceEntity service = serviceService.addService(user, serviceDTO.getName());
+            ServiceEntity service = serviceService.addService(user, serviceDTO);
             userService.addService(user, service);
             return new ResponseEntity<>(service, HttpStatus.CREATED);
         } catch (Exception e) {

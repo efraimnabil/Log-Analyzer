@@ -2,6 +2,7 @@ package com.service_health_monitor_portal.log_analyzer.services;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -13,8 +14,10 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import com.service_health_monitor_portal.log_analyzer.dto.ServiceDTO;
 import com.service_health_monitor_portal.log_analyzer.entity.BadgeEntity;
 import com.service_health_monitor_portal.log_analyzer.entity.ServiceEntity;
 import com.service_health_monitor_portal.log_analyzer.entity.User;
@@ -33,9 +36,13 @@ public class ServiceService {
     @Autowired
     private BadgeRepository badgeRepository;
 
-    public ServiceEntity addService(User user, String serviceName) {
+    public ServiceEntity addService(User user, ServiceDTO serviceDTO) {
         ServiceEntity service = new ServiceEntity();
-        service.setName(serviceName);
+        service.setName(serviceDTO.getName());
+        service.setDescription(serviceDTO.getDescription());
+        List<BadgeEntity> fetchedBadges = badgeRepository.findAllById(serviceDTO.getBadgeIds());
+        Set<BadgeEntity> badges = new HashSet<>(fetchedBadges);
+        service.setBadges(badges);
         service.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         service.setUser(user);
 
@@ -53,10 +60,13 @@ public class ServiceService {
         requestBody.put("createdAt", savedService.getCreatedAt());
         requestBody.put("userId", savedService.getUser().getId());
 
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+        try {
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+            restTemplate.postForEntity(simulatorUrl, request, String.class);
+        } catch (ResourceAccessException e) {
+            System.out.println(e);
+        }
 
-        restTemplate.postForEntity(simulatorUrl, request, String.class);
-        // Till here
         return savedService;
     }
 
@@ -90,7 +100,7 @@ public class ServiceService {
         // Check if badges exist
         Set<BadgeEntity> existingBadges = badgeRepository.findAllById(badgeIds).stream()
                 .collect(Collectors.toSet());
-        
+
         // Check for badges that do not exist
         List<Long> nonExistentBadgeIds = badgeIds.stream()
                 .filter(id -> existingBadges.stream().noneMatch(badge -> badge.getId().equals(id)))
