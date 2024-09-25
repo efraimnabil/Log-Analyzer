@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.lang.reflect.Field;
+import org.springframework.util.ReflectionUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -18,6 +20,7 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import com.service_health_monitor_portal.log_analyzer.dto.ServiceDTO;
+import com.service_health_monitor_portal.log_analyzer.dto.UpdateServiceDTO;
 import com.service_health_monitor_portal.log_analyzer.entity.BadgeEntity;
 import com.service_health_monitor_portal.log_analyzer.entity.ServiceEntity;
 import com.service_health_monitor_portal.log_analyzer.entity.User;
@@ -85,6 +88,21 @@ public class ServiceService {
 
     public void deleteService(ServiceEntity service) {
         serviceRepository.delete(service);
+    }
+
+    public void updateService(ServiceEntity service, UpdateServiceDTO updateService) {
+        if (updateService.getName() != null) {
+            service.setName(updateService.getName());
+        }
+        if (updateService.getDescription() != null) {
+            service.setDescription(updateService.getDescription());
+        }
+        if (updateService.getBadgeIds() != null) {
+            List<BadgeEntity> fetchedBadges = badgeRepository.findAllById(updateService.getBadgeIds());
+            Set<BadgeEntity> badges = new HashSet<>(fetchedBadges);
+            service.setBadges(badges);
+        }
+        serviceRepository.save(service);
     }
 
     public Set<BadgeEntity> getBadgesForService(Long serviceId) {
